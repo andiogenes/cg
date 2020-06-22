@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import ctypes
+import random
 import sys
+import time
 
 import sdl2.ext
 import sdl2.events
@@ -9,6 +11,8 @@ import sdl2.events
 import threading
 from itertools import tee
 from math import sin, cos
+
+TIMER_ESTIMATION = 4.5
 
 BLACK = sdl2.ext.Color(0, 0, 0)
 WHITE = sdl2.ext.Color(255, 255, 255)
@@ -149,6 +153,18 @@ def rotation(angle, axis):
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
+        0, 0, 0, 1
+    ]
+
+
+def triaxis_rotation(a, b, c):
+    """
+    Строит матрицу поворота относительно Z:Y:X.
+    """
+    return [
+        cos(c) * cos(b), cos(a) * sin(c) + cos(c) * sin(b) * sin(a), sin(c) * sin(a) - cos(c) * sin(b) * cos(a), 0,
+        -sin(c) * cos(b), cos(c) * cos(a) - sin(c) * sin(b) * sin(a), sin(c) * cos(a) * sin(b) + cos(c) * sin(a), 0,
+        sin(b), -cos(b) * sin(a), cos(b) * cos(a), 0,
         0, 0, 0, 1
     ]
 
@@ -337,6 +353,79 @@ def repl():
             draw()
 
 
+# Счетчик времени, при пересечении определенной отметки меняется ускорение
+timer = 0
+
+# Углы, на которые поворачивается объект
+a_angle = 0
+b_angle = 0
+c_angle = 0
+
+# Скорость, с которой меняются углы поворота
+a_vel = 0
+b_vel = 0
+c_vel = 0
+
+# Ускорение смены углов поворота
+a_accel = random.random()
+b_accel = random.random()
+c_accel = random.random()
+
+last_time = None
+
+
+def update():
+    """
+    Обновляет положение объекта за промежуток времени.
+    """
+    global last_time, timer, a_angle, b_angle, c_angle, a_vel, b_vel, c_vel, a_accel, b_accel, c_accel, transformation
+
+    cur_time = time.time()
+    if last_time:
+        dt = cur_time - last_time
+
+        timer += dt
+
+        # Если счетчик времени пересек TIMER_ESTIMATION:..
+        if timer > TIMER_ESTIMATION:
+            # Обнулить счетчик
+            timer = 0
+
+            ap = random.random()
+            bp = random.random()
+            cp = random.random()
+
+            # Изменить ускорение
+            a_accel = (1 if ap > 0.5 else -1) * random.random()
+            b_accel = (1 if bp > 0.5 else -1) * random.random()
+            c_accel = (1 if cp > 0.5 else -1) * random.random()
+
+        # Прирост скорости
+        a_vel += a_accel * dt * 0.01
+        b_vel += b_accel * dt * 0.01
+        c_vel += c_accel * dt * 0.01
+
+        # Прирост углов
+        a_angle += a_vel
+        b_angle += b_vel
+        c_angle += c_vel
+
+        # Ограничение углов до диапазона [-2*PI, 2*PI]
+        if abs(a_angle) > 6.28:
+            a_angle = 0
+        if abs(b_angle) > 6.28:
+            b_accel = 0
+        if abs(c_angle) > 6.28:
+            c_accel = 0
+
+        transformation = triaxis_rotation(a_angle, b_angle, c_angle)
+
+    last_time = cur_time
+
+    # Перерисовка изображения
+    draw()
+
+
 # Первичная отрисовка модели
 draw()
 
@@ -353,6 +442,7 @@ while running:
         if event.type == sdl2.SDL_QUIT:
             running = False
             break
+    update()
     window.refresh()
 
 sdl2.ext.quit()
