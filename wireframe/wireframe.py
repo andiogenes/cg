@@ -56,26 +56,6 @@ def line(pixels, x0, y0, x1, y1, color):
             error2 -= dx * 2
 
 
-def cull(v):
-    x, y = v
-    return min(max(0, round(x)), SCREEN_WIDTH - 1), min(max(0, round(y)), SCREEN_HEIGHT - 1)
-
-
-def project(point):
-    """
-    Проецирует точку (x,y,z) на некоторую картинную плоскость.
-
-    Возвращает пару значений в оконных координатах.
-    """
-    x, y, z = point
-
-    scale = 250
-    offset_x = 400
-    offset_y = 300
-
-    return cull((y * scale + offset_x, z * scale + offset_y))
-
-
 def translation(ox, oy, oz):
     """
     Строит матрицу переноса точки в направлении (ox, oy, oz).
@@ -221,6 +201,55 @@ transformation = [
     0, 0, 1, 0,
     0, 0, 0, 1
 ]
+
+# Коэфициент смещения центра картинной плоскости (см. комментарий ниже)
+pk = 10
+
+# Матрица преобразования перспективного проецирования.
+# Центр проектирования лежит в точке (pk, 0, 0).
+project_transformation = [
+    0, 0, 0, -1 / pk,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+]
+
+# Матрица, по которой координаты (_,y,z) преобразуются в (y,z,0).
+yz_to_xy_transformation = [
+    0, 0, 0, 0,
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+]
+
+
+def cull(v):
+    x, y = v
+    return min(max(0, round(x)), SCREEN_WIDTH - 1), min(max(0, round(y)), SCREEN_HEIGHT - 1)
+
+
+def project(point):
+    """
+    Проецирует точку (x,y,z) на некоторую картинную плоскость.
+
+    Возвращает пару значений в оконных координатах.
+    """
+    x, y, z = transform(point, project_transformation)
+
+    w = point[0] * project_transformation[3] + \
+        point[1] * project_transformation[7] + \
+        point[2] * project_transformation[11] + \
+        project_transformation[15]
+
+    x, y, z = x / w, y / w, z / w
+
+    x, y, _ = transform((x, y, z), yz_to_xy_transformation)
+
+    scale = 250
+    offset_x = SCREEN_WIDTH / 2
+    offset_y = SCREEN_HEIGHT / 2
+
+    return cull((x * scale + offset_x, y * scale + offset_y))
 
 
 def draw():
