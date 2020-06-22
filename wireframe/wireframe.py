@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import ctypes
+import sys
+
 import sdl2.ext
 import sdl2.events
 
@@ -16,6 +18,9 @@ MODEL_SOURCE = 'suzanne.obj'
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+mode = sys.argv[1:]
+mode = 'repl' if len(mode) == 0 else mode[0]
+
 sdl2.ext.init()
 window = sdl2.ext.Window("Афинные преобразования", size=(SCREEN_WIDTH, SCREEN_HEIGHT))
 window.show()
@@ -23,7 +28,7 @@ window.show()
 window_surface = window.get_surface()
 
 
-def line(pixels, x0, y0, x1, y1, color):
+def bresenham(pixels, x0, y0, x1, y1, color):
     """
     Растеризует отрезок [(x0,y0),(x1,y1)] при помощи алгоритма Брезенхема.
 
@@ -54,6 +59,14 @@ def line(pixels, x0, y0, x1, y1, color):
         if error2 > dx:
             y += 1 if y1 > y0 else -1
             error2 -= dx * 2
+
+
+if mode == 'repl':
+    def line(pixels, x0, y0, x1, y1, color):
+        bresenham(pixels, x0, y0, x1, y1, color)
+else:
+    def line(_, x0, y0, x1, y1, color):
+        sdl2.ext.line(window_surface, color, (x0, y0, x1, y1))
 
 
 def translation(ox, oy, oz):
@@ -328,8 +341,9 @@ def repl():
 draw()
 
 # Создание и запуск потока интерактивного ввода
-repl_thread = threading.Thread(target=repl)
-repl_thread.start()
+if mode == 'repl':
+    repl_thread = threading.Thread(target=repl)
+    repl_thread.start()
 
 # Петля событий SDL
 running = True
