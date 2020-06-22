@@ -233,6 +233,7 @@ def draw():
 
     pixels = sdl2.ext.PixelView(window_surface)
 
+    # Итерирование по списку граней, отрисовка ребер, входящих в грани
     for s in surfaces:
         a, b = tee(s)
         next(b, None)
@@ -281,6 +282,14 @@ def repl():
 
         elif command == 'mirror' or command == 'm':
             transformation = mm(mirror(args[0]), transformation)
+
+        elif command == 'reset':
+            transformation = [
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            ]
 
         with lock:
             draw()
