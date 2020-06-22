@@ -67,7 +67,7 @@ def project(point):
 
     Возвращает пару значений в оконных координатах.
     """
-    x, y, z = rotate(rotate(point, -3.14 / 2, 'x'), 3.14 / 2, 'z')
+    x, y, z = point
 
     scale = 250
     offset_x = 400
@@ -76,87 +76,151 @@ def project(point):
     return cull((y * scale + offset_x, z * scale + offset_y))
 
 
-def translate(point, ox, oy, oz):
+def translation(ox, oy, oz):
     """
-    Применяет к радиус-вектору R(x, y, z) матрицу переноса с заданными параметрами.
-
-    Возвращает вектор (x+ox, y+oy, z+oz).
+    Строит матрицу переноса точки в направлении (ox, oy, oz).
     """
-    x, y, z = point
-    return x + ox, y + oy, z + oz
+    return [
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        ox, oy, oz, 1
+    ]
 
 
-def scale(point, sx, sy, sz):
+def scale(sx, sy, sz):
     """
-    Применяет к радиус-вектору R(x, y, z) матрицу масштабирования с заданными параметрами.
-
-    Возвращает вектор (x*sx, y*sy, z*sz).
+    Строит матрицу масштабирования координат с коэфициентами масштабирования (sx, sy, sz).
     """
-    x, y, z = point
-    return x * sx, y * sy, z * sz
+    return [
+        sx, 0, 0, 0,
+        0, sy, 0, 0,
+        0, 0, sz, 0,
+        0, 0, 0, 1
+    ]
 
 
-def mirror(point, direction):
+def mirror(mirror_surface):
     """
-    Применяет к радиус-вектору R(x, y, z) матрицу отражения с заданными параметрами.
+    Строит матрицу отражения точки относительно некоторой плоскости mirror_surface.
 
-    Возможные значения direction:
+    Возможные значения mirror_surface:
     * xy - отражение относительно плоскости XY
     * yz - отражение относительно плоскости YZ
     * xz - отражение относительно плоскости XZ
-
-    Возвращает отраженный вектор.
     """
     sx, sy, sz = 1, 1, 1
 
-    if direction == "xy":
+    if mirror_surface == "xy":
         sz = -1
-    elif direction == "yz":
+    elif mirror_surface == "yz":
         sx = -1
-    elif direction == "xz":
+    elif mirror_surface == "xz":
         sy = -1
 
-    return scale(point, sx, sy, sz)
+    return scale(sx, sy, sz)
 
 
-def rotate(point, angle, direction):
+def rotation(angle, axis):
     """
-    Применяет к радиус-вектору R(x, y, z) матрицу поворота с заданными параметрами.
+    Строит матрицу поворота на угол angle относительно оси axis.
 
-    Возможные значения direction:
+    Возможные значения axis:
     * x - производит вращения относительно оси OX.
     * y - производит вращения относительно оси OY.
     * z - производит вращения относительно оси OZ.
-
-    Возвращает повернутый на угол angle вектор.
     """
-    x, y, z = point
+    if axis == "x":
+        return [
+            1, 0, 0, 0,
+            0, cos(angle), sin(angle), 0,
+            0, -sin(angle), cos(angle), 0,
+            0, 0, 0, 1
+        ]
+    elif axis == "y":
+        return [
+            cos(angle), 0, -sin(angle), 0,
+            0, 1, 0, 0,
+            sin(angle), 0, cos(angle), 0,
+            0, 0, 0, 1
+        ]
+    elif axis == "z":
+        return [
+            cos(angle), sin(angle), 0, 0,
+            -sin(angle), cos(angle), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]
 
-    if direction == "x":
-        return x, y * cos(angle) - z * sin(angle), y * sin(angle) + z * cos(angle)
-    elif direction == "y":
-        return x * cos(angle) + z * sin(angle), y, -x * sin(angle) + z * cos(angle)
-    elif direction == "z":
-        return x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle), z
+    return [
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    ]
 
-    return point
+
+def mm(m1, m2):
+    """
+    Вычисляет произведение матриц m1 x m2 в однородной системе координат (x, y, z, w)
+    """
+    return [
+        m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8] + m1[3] * m2[12],
+        m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9] + m1[3] * m2[13],
+        m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10] + m1[3] * m2[14],
+        m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3] * m2[15],
+
+        m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8] + m1[7] * m2[12],
+        m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9] + m1[7] * m2[13],
+        m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10] + m1[7] * m2[14],
+        m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7] * m2[15],
+
+        m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8] + m1[11] * m2[12],
+        m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9] + m1[11] * m2[13],
+        m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10] + m1[11] * m2[14],
+        m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11] * m2[15],
+
+        m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] + m1[15] * m2[12],
+        m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] + m1[15] * m2[13],
+        m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14],
+        m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15],
+    ]
+
+
+def transform(p, m):
+    """
+    Применяет матричное преобразование m к заданной точке p.
+    """
+    return (p[0] * m[0] + p[1] * m[4] + p[2] * m[8] + m[12],
+            p[0] * m[1] + p[1] * m[5] + p[2] * m[9] + m[13],
+            p[0] * m[2] + p[1] * m[6] + p[2] * m[10] + m[14])
 
 
 vertices = []  # Список координат вершин 3D-объекта
 surfaces = []  # Список вершин поверхностей, составляющих 3D-объект
+
+# Преобразование, корректирующее представление модели в формате OBJ (меняет оси)
+viewport_adjustment = mm(rotation(-3.14 / 2, 'x'), rotation(3.14 / 2, 'z'))
 
 # Парсинг 3D-модели из файла
 with open(MODEL_SOURCE) as f:
     for ll in f.readlines():
         d = ll.split(' ')
         if d[0] == 'v':
-            vertices.append((float(d[1]), float(d[2]), float(d[3])))
+            # Преобразует тройку в кортеж вещественных чисел и производит поворот модели по двум осям
+            vertex = transform((float(d[1]), float(d[2]), float(d[3])), viewport_adjustment)
+            vertices.append(vertex)
         elif d[0] == 'f':
             surface = tuple(map(lambda v: int(v.split('/')[0]), d[1:]))
             surfaces.append(surface)
 
-# Последовательность преобразований пространства
-transformations = [lambda v: v]
+# Начальная матрица преобразований - единичная.
+transformation = [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+]
 
 
 def draw():
@@ -173,11 +237,8 @@ def draw():
         a, b = tee(s)
         next(b, None)
         for e in zip(a, b):
-            e1 = vertices[e[0] - 1]
-            e2 = vertices[e[1] - 1]
-            for t in transformations:
-                e1 = t(e1)
-                e2 = t(e2)
+            e1 = transform(vertices[e[0] - 1], transformation)
+            e2 = transform(vertices[e[1] - 1], transformation)
 
             x1, y1 = project(e1)
             x2, y2 = project(e2)
@@ -193,6 +254,8 @@ def repl():
     """
     lock = threading.Lock()
 
+    global transformation
+
     while True:
         command, *args = input('> ').split()
 
@@ -205,19 +268,19 @@ def repl():
             break
         elif command == 'translate' or command == 't':
             ox, oy, oz = map(lambda v: 0. if v == '_' else float(v), args[:3])
-            transformations.append(lambda v: translate(v, ox, oy, oz))
+            transformation = mm(translation(ox, oy, oz), transformation)
 
         elif command == 'scale' or command == 's':
             sx, sy, sz = map(lambda v: 1. if v == '_' else float(v), args[:3])
-            transformations.append(lambda v: scale(v, sx, sy, sz))
+            transformation = mm(scale(sx, sy, sz), transformation)
 
         elif command == 'rotate' or command == 'r':
             angle = float(args[0])
             direction = args[1]
-            transformations.append(lambda v: rotate(v, angle, direction))
+            transformation = mm(rotation(angle, direction), transformation)
 
         elif command == 'mirror' or command == 'm':
-            transformations.append(lambda v: mirror(v, args[0]))
+            transformation = mm(mirror(args[0]), transformation)
 
         with lock:
             draw()
