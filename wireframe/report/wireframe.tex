@@ -13,10 +13,13 @@
 \usepackage{minted}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{graphicx}
 
 \hypersetup{
   pdfborderstyle={/S/U/W 1}
 }
+
+\graphicspath{{./images/}}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -56,7 +59,7 @@
     \item Реализованы 4 основных типа аффинных преобразований: перемещение, поворот (вокруг осей OX, OY, OZ), масштабирования, отражения (относительно плоскостей XY, XZ, YZ).
     \item Написана процедура перспективного проецирования с центром проецирования в точке \((c, 0, 0)\) и проекционной плоскостью ZOY. \linebreakМатрица преобразования: \(\begin{pmatrix}0 & 0 & 0 & - 1/c \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1\end{pmatrix}\).\linebreak После преобразования координаты делятся на w и тройка координат \((0, y, z)\) преобразуется в пару координат \((y, z)\) экранного пространства. 
     \item Написана процедура проецирования ребер трехмерной фигуры на экранную плоскость и растеризации полученных линий.
-    \item Написаны 2 режима работы программы:
+    \item Реализованы 2 режима работы программы:
       \linebreak
       \begin{itemize}
         \item Формирование матрицы преобразования путем ввода команд в терминале. Поддерживаемые команды:
@@ -77,9 +80,25 @@
 
 \section{\normalsize{Исходный код}}
 Исходный код программы также расположен в Git-репозитории по адресу: \url{https://github.com/andiogenes/cg/tree/master/wireframe}
-% \inputminted[breaklines]{python}{../wireframe.py}
+\inputminted[breaklines]{python}{../wireframe.py}
 
 \section{\normalsize{Демонстрация работы программы}}
-
+\begin{flushleft}
+  Перемещение:
+  \includegraphics{translation.png}
+  Перспективная проекция (модель переместили ближе к камере):
+  \includegraphics{perspective.png}
+  Поворот:
+  \includegraphics{rotation.png}
+  Масштабирование:
+  \includegraphics{scale.png}
+  Отражение:
+  \includegraphics{mirror.png}
+  Суперпозиция преобразований:
+  \includegraphics{all_transformations.png}
+\end{flushleft}
+\begin{flushleft}
+  \textbf{Демонстрацию анимации можно посмотреть на YouTube:} \url{https://youtu.be/reCDbkACzpA}
+\end{flushleft}
 \end{document}
 
