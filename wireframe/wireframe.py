@@ -436,7 +436,8 @@ while running:
         if event.type == sdl2.SDL_QUIT:
             running = False
             break
-    update()
+    if mode != 'repl':
+        update()
     window.refresh()
 
 sdl2.ext.quit()
