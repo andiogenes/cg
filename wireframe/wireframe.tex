@@ -1,0 +1,54 @@
+% Использован шаблон:
+% https://www.writelatex.com/coursera/latex/1.1
+% http://coursera.org/course/latex
+
+
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{fancyhdr}
+\usepackage{listings}
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Антон Завьялов, ПИ-72}
+\rhead{\textbf{Лабораторная №1. Вариант 7}}
+\cfoot{\thepage}
+
+\makeatletter
+\def\@seccntformat#1{%
+  \expandafter\ifx\csname c@#1\endcsname\c@section\else
+  \csname the#1\endcsname\quad
+  \fi}
+\makeatother
+
+\begin{document} % Конец преамбулы, начало текста.
+
+\begin{center}
+  \textbf{Лабораторная работа №1 по дисциплине\linebreak"Компьютерная графика"\linebreak\linebreakВыполнил студент группы ПИ-72 Завьялов А.А.}\\
+\end{center}
+
+\section{\normalsize{Задание}}
+\begin{flushleft}
+  Разработать программу аффинных преобразований и проецирования 3D-проволочного объекта. Интерфейс должен позволять управлять текущим преобразованием объекта мышью или клавиатурой.
+\end{flushleft}
+
+\begin{flushleft}
+  Реализовать все элементарные преобразования. Кроме того, реализовать дополнительное динамическое преобразование (анимацию) по варианту.
+  \linebreak\linebreak
+  \textbf{Вариант 7.} Вращение относительно геометрического центра объекта со случайной сменой направления (смена направления должна осуществляться плавно!)
+\end{flushleft}
+
+\section{\normalsize{Ход работы}}
+\begin{flushleft}
+  
+\end{flushleft}
+
+\section{\normalsize{Исходный код}}
+
+\end{document}
+
