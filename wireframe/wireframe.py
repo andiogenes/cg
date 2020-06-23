@@ -10,7 +10,9 @@ import sdl2.events
 
 import threading
 from itertools import tee
-from math import sin, cos
+from math import sin, cos, pi
+
+ANGLE_CONSTRAINT = (2 * pi)
 
 TIMER_ESTIMATION = 4.5
 
@@ -26,7 +28,7 @@ mode = sys.argv[1:]
 mode = 'repl' if len(mode) == 0 else mode[0]
 
 sdl2.ext.init()
-window = sdl2.ext.Window("Афинные преобразования", size=(SCREEN_WIDTH, SCREEN_HEIGHT))
+window = sdl2.ext.Window("Аффинные преобразования", size=(SCREEN_WIDTH, SCREEN_HEIGHT))
 window.show()
 
 window_surface = window.get_surface()
@@ -406,17 +408,9 @@ def update():
         c_vel += c_accel * dt * 0.01
 
         # Прирост углов
-        a_angle += a_vel
-        b_angle += b_vel
-        c_angle += c_vel
-
-        # Ограничение углов до диапазона [-2*PI, 2*PI]
-        if abs(a_angle) > 6.28:
-            a_angle = 0
-        if abs(b_angle) > 6.28:
-            b_accel = 0
-        if abs(c_angle) > 6.28:
-            c_accel = 0
+        a_angle = (a_angle + a_vel) % ANGLE_CONSTRAINT
+        b_angle = (b_angle + b_vel) % ANGLE_CONSTRAINT
+        c_angle = (c_angle + c_vel) % ANGLE_CONSTRAINT
 
         transformation = triaxis_rotation(a_angle, b_angle, c_angle)
 
