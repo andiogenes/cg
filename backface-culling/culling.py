@@ -24,7 +24,10 @@ if len(sys.argv) > 1:
     model_source = sys.argv[1]
 
 sdl2.ext.init()
-window = sdl2.ext.Window("Удаление невидимых линий и поверхностей", size=(SCREEN_WIDTH, SCREEN_HEIGHT))
+window = sdl2.ext.Window(
+    "Удаление невидимых линий и поверхностей • {}".format(model_source),
+    size=(SCREEN_WIDTH, SCREEN_HEIGHT)
+)
 window.show()
 
 window_surface = window.get_surface()
