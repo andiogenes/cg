@@ -201,6 +201,7 @@ def project(point):
 visible_normals = False  # Если значение истинно, происходит отрисовка нормалей к граням фигуры.
 visible_axis = False  # Если значение истинно, происходит отрисовка координатных осей.
 flipped_axis = False  # Если значение истинно, происходит переход из системы координат (x, y, z) в (y, x, z).
+use_culling = True  # Если значение истинно, используется отсечение невидимых граней.
 
 
 def draw():
@@ -246,7 +247,7 @@ def draw():
             else:
                 line(nx0, ny0, nx1, ny1, RED)
 
-        if face_orientation < 0:
+        if use_culling and face_orientation < 0:
             continue
 
         vs = [transform(vertices[j - 1], ft) for j in s]
@@ -356,6 +357,8 @@ while running:
                 visible_normals = not visible_normals
             elif event.key.keysym.sym == sdl2.SDLK_a:
                 visible_axis = not visible_axis
+            elif event.key.keysym.sym == sdl2.SDLK_z:
+                use_culling = not use_culling
     update()
     window.refresh()
 
