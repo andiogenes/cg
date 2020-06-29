@@ -16,6 +16,10 @@ TIMER_ESTIMATION = 4.5
 BLACK = sdl2.ext.Color(0, 0, 0)
 WHITE = sdl2.ext.Color(255, 255, 255)
 
+RED = sdl2.ext.Color(255, 0, 0)
+GREEN = sdl2.ext.Color(0, 255, 0)
+BLUE = sdl2.ext.Color(0, 0, 255)
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
@@ -164,6 +168,14 @@ transformation = [
     0, 0, 0, 1
 ]
 
+# Матрица преобразований координатной оси.
+axis_transformation = [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+]
+
 
 def clip(v):
     x, y = v
@@ -186,6 +198,11 @@ def project(point):
     return clip((y * scale + offset_x, z * scale + offset_y))
 
 
+visible_normals = False  # Если значение истинно, происходит отрисовка нормалей к граням фигуры.
+visible_axis = False  # Если значение истинно, происходит отрисовка координатных осей.
+flipped_axis = False  # Если значение истинно, происходит переход из системы координат (x, y, z) в (y, x, z).
+
+
 def draw():
     """
     Отрисовка модели
@@ -194,27 +211,66 @@ def draw():
     # Очистка буффера
     sdl2.ext.fill(window_surface, BLACK)
 
+    # Преобразование (x, y, z) к (y, x, z)
+    flip_transformation = None
+
+    if flipped_axis:
+        flip_transformation = rotation(-pi / 2, 'z')
+
+    ft = mm(flip_transformation, transformation) if flipped_axis else transformation
+    fat = mm(flip_transformation, axis_transformation) if flipped_axis else axis_transformation
+
+    # Отрисовка координатных осей
+    if visible_axis:
+        ox, oy = project(transform((0, 0, 0), fat))
+        xx, xy = project(transform((2, 0, 0), fat))
+        yx, yy = project(transform((0, 2, 0), fat))
+        zx, zy = project(transform((0, 0, -2), fat))
+
+        line(ox, oy, xx, xy, RED)
+        line(ox, oy, yx, yy, GREEN)
+        line(ox, oy, zx, zy, BLUE)
+
     # Итерирование по списку граней, отрисовка ребер, входящих в грани
     for i, s in enumerate(surfaces):
-        norm = transform(normals[i], transformation)
+        norm = transform(normals[i], ft)
+        face_orientation = dot((0, -1, 0) if flipped_axis else (-1, 0, 0), norm)
 
-        if dot((-1, 0, 0), norm) < 0:
+        # Отрисовка нормалей
+        if visible_normals:
+            nx0, ny0 = project(norm)
+            nx1, ny1 = project(transform([1.25 * c for c in normals[i]], ft))
+
+            if face_orientation > 0:
+                line(nx0, ny0, nx1, ny1, WHITE)
+            else:
+                line(nx0, ny0, nx1, ny1, RED)
+
+        if face_orientation < 0:
             continue
 
-        vs = [transform(vertices[j - 1], transformation) for j in s]
+        vs = [transform(vertices[j - 1], ft) for j in s]
 
-        a, b = tee(vs)
-        next(b, None)
-        for v in zip(a, b):
-            x1, y1 = project(v[0])
-            x2, y2 = project(v[1])
+        draw_polygon(vs, WHITE)
 
-            line(x1, y1, x2, y2, WHITE)
 
-        # Соединяем первую вершину грани с последней
-        x1, y1 = project(vs[0])
-        x2, y2 = project(vs[len(vs) - 1])
-        line(x1, y1, x2, y2, WHITE)
+def draw_polygon(p, color):
+    """
+    Рисует многоугольник, заданный списком координат [(x0, y0), ..., (xn, yn)], (x0,y0) != (xn, yn).
+    Ребра многоугольника окрашиваются в цвет color.
+    """
+    a, b = tee(p)
+    next(b, None)
+    for v in zip(a, b):
+        x1, y1 = project(v[0])
+        x2, y2 = project(v[1])
+
+        line(x1, y1, x2, y2, color)
+
+    # Соединяем первую вершину грани с последней
+    x1, y1 = project(p[0])
+    x2, y2 = project(p[len(p) - 1])
+    line(x1, y1, x2, y2, color)
 
 
 # Счетчик времени, при пересечении определенной отметки меняется ускорение
@@ -293,6 +349,13 @@ while running:
         if event.type == sdl2.SDL_QUIT:
             running = False
             break
+        if event.type == sdl2.SDL_KEYDOWN:
+            if event.key.keysym.sym == sdl2.SDLK_r:
+                flipped_axis = not flipped_axis
+            elif event.key.keysym.sym == sdl2.SDLK_n:
+                visible_normals = not visible_normals
+            elif event.key.keysym.sym == sdl2.SDLK_a:
+                visible_axis = not visible_axis
     update()
     window.refresh()
 
