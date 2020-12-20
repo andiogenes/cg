@@ -1,11 +1,14 @@
 #include "raylib.h"
 
+#define RLIGHTS_IMPLEMENTATION
+#include "rlights.h"
+
 int main()
 {
-    const int screenWidth = 1280;
-    const int screenHeight = 768;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
 
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_FULLSCREEN_MODE);
     InitWindow(screenWidth, screenHeight, "Simplest realistic scene with OpenGL");
 
     // Камера
@@ -38,46 +41,71 @@ int main()
     UnloadTexture(panorama);
     // ----------------------------------------------------------------------------------
 
+    // Освещение
+    // ----------------------------------------------------------------------------------
+    Shader shader = LoadShader("resources/shaders/glsl330/base_lighting.vs", "resources/shaders/glsl330/lighting.fs");
+    shader.locs[LOC_MATRIX_MODEL] = GetShaderLocation(shader, "matModel");
+    shader.locs[LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    SetShaderValue(shader, ambientLoc, (float[4]){ 0.2f, 0.2f, 0.2f, 1.0f }, UNIFORM_VEC4);
+
+    // Точечное освещение
+    CreateLight(LIGHT_POINT, (Vector3){ 1, 1, 1 }, (Vector3){ 0, 0, 0 }, BLUE, shader);
+    CreateLight(LIGHT_POINT, (Vector3){ 1, 1, -1 }, (Vector3){ 0, 0, 0 }, GREEN, shader);
+    CreateLight(LIGHT_POINT, (Vector3){ -1, 1, 0 }, (Vector3){ 0, 0, 0 }, RED, shader);
+    // ----------------------------------------------------------------------------------
+
     // Ленин
     // ----------------------------------------------------------------------------------
     Model lenin = LoadModel("resources/lenin.obj");
+    lenin.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Гранитный монумент
     // ----------------------------------------------------------------------------------
     Model monument = LoadModel("resources/monument.obj");
+    monument.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Платформа
     // ----------------------------------------------------------------------------------
     Model platform = LoadModel("resources/platform.obj");
+    platform.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Правительство Алтайского края
     // ----------------------------------------------------------------------------------
     Model government = LoadModel("resources/govt.obj");
+    government.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Земля
     // ----------------------------------------------------------------------------------
     Model ground_1 = LoadModel("resources/ground_1.obj");
     Model ground_2 = LoadModel("resources/ground_2.obj");
+    ground_1.materials[0].shader = shader;
+    ground_2.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Бордюр
     // ----------------------------------------------------------------------------------
     Model border = LoadModel("resources/border.obj");
+    border.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Трава
     // ----------------------------------------------------------------------------------
     Model grass = LoadModel("resources/grass.obj");
+    grass.materials[0].shader = shader;
     // ----------------------------------------------------------------------------------
 
     // Пихтовое дерево
     // ----------------------------------------------------------------------------------
     Model tree = LoadModel("resources/cedar_tree_model.obj");
     Model bark = LoadModel("resources/bark.obj");
+
+    bark.materials[0].shader = shader;
 
     Vector3 treeCoordinates[] = {
             {1.75f, 0, 4.5f},
@@ -144,6 +172,8 @@ int main()
     UnloadModel(grass);
     UnloadModel(tree);
     UnloadModel(bark);
+
+    UnloadShader(shader);
 
     CloseWindow();
 
