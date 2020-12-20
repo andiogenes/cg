@@ -1,0 +1,88 @@
+% Использован шаблон:
+% https://www.writelatex.com/coursera/latex/1.1
+% http://coursera.org/course/latex
+
+
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{fancyhdr}
+\usepackage{minted}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\hypersetup{
+  pdfborderstyle={/S/U/W 1}
+}
+
+\graphicspath{{./images/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Антон Завьялов, ПИ-72}
+\rhead{\textbf{Лабораторная №5}}
+\cfoot{\thepage}
+
+\makeatletter
+\def\@seccntformat#1{%
+  \expandafter\ifx\csname c@#1\endcsname\c@section\else
+  \csname the#1\endcsname\quad
+  \fi}
+\makeatother
+
+\begin{document} % Конец преамбулы, начало текста.
+
+\begin{center}
+  \textbf{Лабораторная работа №5 по дисциплине\linebreak"Компьютерная графика"\linebreak\linebreakВыполнил студент группы ПИ-72 Завьялов А.А.}\\
+\end{center}
+
+\section{\normalsize{Задание}}
+\begin{flushleft}
+Для произвольного фотоизображения реализовать:
+
+\begin{enumerate}
+    \item вывод изображения на экран;
+    \item построение гистограммы яркости;
+    \item преобразование яркости;
+    \item преобразование контрастности;
+    \item изменение цветности: \begin{itemize}
+        \item бинаризация (переход к чёрно-белому);
+        \item переход к оттенкам серого;
+        \item получение негатива;
+    \end{itemize}
+\end{enumerate}
+
+Дополнительно оцениваются:
+
+\begin{itemize}
+    \item работа с выделенным фрагментом;
+    \item преобразование гистограмм;
+    \item бинаризация с различными методами выбора уровня.
+\end{itemize}
+
+\end{flushleft}
+
+\section{\normalsize{Исходный код}}
+Исходный код программы также расположен в Git-репозитории по адресу: \url{https://github.com/andiogenes/cg/tree/master/image-processing}
+\inputminted[breaklines]{py}{../simplest.py}
+
+\section{\normalsize{Скриншоты, демонстрирующие работу программы}}
+\begin{flushleft}
+  \includegraphics[scale=0.9]{hist.jpg}
+  \includegraphics[scale=1]{lum_1.jpg}
+  \includegraphics[scale=1]{lum_2.jpg}
+  \includegraphics[scale=1]{contr_1.jpg}
+  \includegraphics[scale=1]{contr_2.jpg}
+  \includegraphics[scale=1]{binarysation_50.jpg}
+  \includegraphics[scale=1]{binarysation_otsu.jpg}
+  \includegraphics[scale=1]{grayscale.jpg}
+  \includegraphics[scale=0.8]{hist_equal.jpg}
+  \includegraphics[scale=1]{negative.jpg}
+\end{flushleft}
+\end{document}
+
